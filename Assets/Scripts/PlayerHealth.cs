@@ -1,5 +1,6 @@
 using UnityEngine;
-using TMPro; // For TextMeshPro
+using TMPro; 
+using UnityEngine.SceneManagement; 
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -7,17 +8,26 @@ public class PlayerHealth : MonoBehaviour
     public float currentHealth; // current health
 
     public TextMeshProUGUI healthText; // UI element to display health
+    public AudioClip healSound; // heal sound clip
+    private AudioSource audioSource; // audio source for playing sounds
 
     private void Start()
     {
         // initialize health to maxHealth at the start
         currentHealth = maxHealth;
 
+        // get or add an AudioSource component
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
         // update the health display
         UpdateHealthDisplay();
     }
 
-    // Function to reduce health when taking damage
+    // function to reduce health when taking damage
     public void TakeDamage(float damageAmount)
     {
         // reduce health by the damage amount
@@ -36,7 +46,7 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
-    // Function to heal the player
+    // function to heal the player
     public void Heal(float healAmount)
     {
         // increase health by the heal amount
@@ -45,11 +55,17 @@ public class PlayerHealth : MonoBehaviour
         // clamp health to not exceed maxHealth
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
+        // play the heal sound if a heal sound is assigned
+        if (healSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(healSound);
+        }
+
         // update the health display
         UpdateHealthDisplay();
     }
 
-    // Function to update the health display UI
+    // function to update the health display UI
     private void UpdateHealthDisplay()
     {
         // update the UI text to show current health
@@ -59,10 +75,11 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
-    // Function to handle player's death
+    // function to handle player's death
     private void Die()
     {
         Debug.Log("Player has died!");
-        // handle player death (e.g., game over logic)
+        // load the DeathScreen scene
+        SceneManager.LoadScene("DeathScene");
     }
 }

@@ -3,8 +3,7 @@ guid: 02c8cea62b9317c4480cdb20553f81cb
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences:
-  - healthPackPrefab: {fileID: 4511498487105800910, guid: 6695c741f36619e4882aaebd287bfeda, type: 3}
+  defaultReferences: []
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

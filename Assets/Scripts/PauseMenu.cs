@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class PauseMenu : MonoBehaviour
 {
-    public GameObject pauseMenuCanvas; // Ensure this line is here
+    public GameObject pauseMenuCanvas;
 
     private bool isPaused = false;
 
@@ -20,15 +20,15 @@ public class PauseMenu : MonoBehaviour
 
     public void PauseGame()
     {
-        pauseMenuCanvas.SetActive(true);   // Show the pause menu
-        Time.timeScale = 0f;               // Freeze the game
+        pauseMenuCanvas.SetActive(true);   // show the pause menu
+        Time.timeScale = 0f;               // freeze the game
         isPaused = true;
     }
 
     public void ResumeGame()
     {
-        pauseMenuCanvas.SetActive(false);  // Hide the pause menu
-        Time.timeScale = 1f;               // Resume the game
+        pauseMenuCanvas.SetActive(false);  // hide the pause menu
+        Time.timeScale = 1f;               // resume the game
         isPaused = false;
     }
 

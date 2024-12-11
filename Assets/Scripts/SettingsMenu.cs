@@ -13,15 +13,15 @@ public class SettingsMenu : MonoBehaviour
 
     void Start()
     {
-        // Initialize Volume
+        // initialize Volume
         volumeSlider.value = AudioListener.volume;
         volumeSlider.onValueChanged.AddListener(SetVolume);
 
-        // Initialize Fullscreen
+        // initialize Fullscreen
         fullscreenToggle.isOn = Screen.fullScreen;
         fullscreenToggle.onValueChanged.AddListener(SetFullscreen);
 
-        // Initialize Resolution Dropdown
+        // initialize Resolution Dropdown
         resolutions = Screen.resolutions;
         resolutionDropdown.ClearOptions();
 

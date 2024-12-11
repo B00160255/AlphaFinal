@@ -51,5 +51,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Alpha-AlphaBuild.sln"
+    "dotnet.defaultSolution": "AlphaFinal.sln"
 }

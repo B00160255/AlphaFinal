@@ -10,11 +10,16 @@ public class PlayerMovement : MonoBehaviour
 
     public bool gameOver = false; // tracks if the game is over
 
+    private PlayerHealth playerHealth; // Reference to the PlayerHealth script
+
     void Start()
     {
         // grab the Rigidbody and Animator components attached to the player
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
+
+        // Get the PlayerHealth component to handle damage
+        playerHealth = GetComponent<PlayerHealth>();
     }
 
     void Update()
@@ -74,7 +79,11 @@ public class PlayerMovement : MonoBehaviour
         // check if the player collides with a "Killbox" (e.g., area that ends the game)
         if (collision.gameObject.CompareTag("Killbox") && !gameOver)
         {
-            gameOver = true; // set the game over flag if the player hits a killbox
+            // damage the player when colliding with the killbox
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(100f); // Apply damage to the player
+            }
         }
     }
 }

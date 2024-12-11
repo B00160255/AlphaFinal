@@ -3,8 +3,8 @@ using UnityEngine.SceneManagement;
 
 public class Menu : MonoBehaviour
 {
-    public GameObject mainMenuCanvas;      // Reference to the Main Menu Canvas
-    public GameObject settingsMenuCanvas;  // Reference to the Settings Menu Canvas
+    public GameObject mainMenuCanvas;      // reference to the Main Menu Canvas
+    public GameObject settingsMenuCanvas;  // reference to the Settings Menu Canvas
 
     public void OnPlayButton()
     {
@@ -16,18 +16,18 @@ public class Menu : MonoBehaviour
         Application.Quit();
     }
 
-    // Open the Settings menu and hide the main menu
+    // open the Settings menu and hide the main menu
     public void OpenSettings()
     {
-        mainMenuCanvas.SetActive(false);          // Hide the main menu
-        settingsMenuCanvas.SetActive(true);       // Show the settings menu
+        mainMenuCanvas.SetActive(false);          // hide the main menu
+        settingsMenuCanvas.SetActive(true);       // show the settings menu
     }
 
-    // Close the Settings menu and show the main menu
+    // close the Settings menu and show the main menu
     public void CloseSettings()
     {
-        settingsMenuCanvas.SetActive(false);      // Hide the settings menu
-        mainMenuCanvas.SetActive(true);           // Show the main menu
+        settingsMenuCanvas.SetActive(false);      // hide the settings menu
+        mainMenuCanvas.SetActive(true);           // show the main menu
     }
 }
 

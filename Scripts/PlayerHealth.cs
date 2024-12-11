@@ -1,75 +1,70 @@
 using UnityEngine;
 using TMPro; // For TextMeshPro
-using UnityEngine.SceneManagement; // For scene management (e.g., restart)
+using UnityEngine.SceneManagement; // For scene management
 
 public class PlayerHealth : MonoBehaviour
 {
-    public float maxHealth = 100f; // Maximum health
-    public float currentHealth; // Current health
+    public float maxHealth = 100f; // maximum health
+    public float currentHealth; // current health
 
     public TextMeshProUGUI healthText; // UI element to display health
 
     private void Start()
     {
-        // Initialize health to maxHealth at the start
+        // initialize health to maxHealth at the start
         currentHealth = maxHealth;
 
-        // Update the health display
+        // update the health display
         UpdateHealthDisplay();
     }
 
     // Function to reduce health when taking damage
     public void TakeDamage(float damageAmount)
     {
-        // Reduce health by the damage amount
+        // reduce health by the damage amount
         currentHealth -= damageAmount;
 
-        // Clamp health to prevent it from going below zero
+        // clamp health to prevent it from going below zero
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
-        // Update the health display
+        // update the health display
         UpdateHealthDisplay();
 
-        // Check if the player is dead
+        // check if the player is dead
         if (currentHealth <= 0)
         {
             Die();
         }
     }
 
+    // Function to heal the player
+    public void Heal(float healAmount)
+    {
+        // increase health by the heal amount
+        currentHealth += healAmount;
+
+        // clamp health to not exceed maxHealth
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
+        // update the health display
+        UpdateHealthDisplay();
+    }
+
     // Function to update the health display UI
     private void UpdateHealthDisplay()
     {
-        // Update the UI text to show current health
+        // update the UI text to show current health
         if (healthText != null)
         {
             healthText.text = "Health: " + currentHealth;
         }
     }
 
-    // Function to handle player's death and transition to the DeathMenu scene
+    // Function to handle player's death
     private void Die()
     {
         Debug.Log("Player has died!");
-
-        // Pause the game
-        Time.timeScale = 0f; // Stops the game
-
-        // Load the DeathMenu scene
-        SceneManager.LoadScene("DeathMenu");
-    }
-
-    // Function to restart the game (call this from a UI button)
-    public void RestartGame()
-    {
-        Time.timeScale = 1f; // Resume the game
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name); // Reload current scene
-    }
-
-    // Function to quit the game (call this from a UI button)
-    public void QuitGame()
-    {
-        Debug.Log("Quitting game...");
-        Application.Quit(); // Exits the application
+        // Load the DeathScreen scene
+        SceneManager.LoadScene("DeathScene");
     }
 }

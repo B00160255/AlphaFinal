@@ -2,32 +2,52 @@ using UnityEngine;
 
 public class PlayerAttack : MonoBehaviour
 {
-    public float attackRange = 2f;
-    public float attackDamage = 25f;
-    public LayerMask enemyLayer;
+    public GameObject bulletPrefab; // Bullet prefab
+    public float bulletSpeed = 20f; // Bullet speed
+    public float shootingDistance = 2f; // Distance in front of the player to spawn the bullet
+    public Transform shootingPoint; // Point from which the bullet will shoot (usually the player's gun or camera)
+    public float fireRate = 0.5f; // Time between shots (fire rate)
+    private float nextFireTime = 0f; // Time for the next shot
 
-    private void Update()
+    void Update()
     {
-        if (Input.GetButtonDown("Fire1")) // Left mouse button or other assigned button
+        // Handle shooting input (e.g., left mouse button or fire button)
+        if (Input.GetButton("Fire1") && Time.time >= nextFireTime)
         {
-            Attack();
+            ShootBullet();
+            nextFireTime = Time.time + fireRate; // Set the next allowed fire time
         }
     }
 
-    private void Attack()
+    private void ShootBullet()
     {
-        // Check for enemies within attack range
-        Collider[] hitEnemies = Physics.OverlapSphere(transform.position, attackRange, enemyLayer);
-        
-        foreach (Collider enemy in hitEnemies)
+        if (bulletPrefab != null && shootingPoint != null)
         {
-            enemy.GetComponent<EnemyAI>()?.TakeDamage(attackDamage);
-        }
-    }
+            // Calculate the spawn position in front of the player
+            // Adjust the spawn position based on shooting distance and the shooting point's rotation
+            Vector3 spawnPosition = shootingPoint.position + shootingPoint.forward * shootingDistance;
 
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+            // Log to ensure the bullet is being instantiated at the correct position
+            Debug.Log("Shooting bullet from: " + spawnPosition);
+
+            // Instantiate the bullet at the calculated position and with the shooting point's rotation
+            GameObject bullet = Instantiate(bulletPrefab, spawnPosition, shootingPoint.rotation);
+
+            // Get the Rigidbody component of the bullet
+            Rigidbody rb = bullet.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                // Apply velocity in the forward direction of the shooting point
+                rb.velocity = shootingPoint.forward * bulletSpeed;
+            }
+            else
+            {
+                Debug.LogError("Bullet does not have a Rigidbody component!");
+            }
+        }
+        else
+        {
+            Debug.LogError("Bullet Prefab or Shooting Point is not assigned.");
+        }
     }
 }

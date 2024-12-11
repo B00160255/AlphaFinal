@@ -3,38 +3,51 @@ using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
 {
-    // health for the enemy drone
+    // Health for the enemy drone
     public float health = 100f;
 
-    // movement speeds for chasing and patrolling
+    // Movement speeds for chasing
     public float chaseSpeed = 5f;
 
-    // detection range and attack range for the drone
+    // Detection range and attack range for the drone
     public float detectionRange = 90f;
     public float attackRange = 2f;
 
-    // damage settings (how much damage per second and how often)
-    public float damageAmount = 1f;
-    public float damageInterval = 1f;
+    // Damage settings for the enemy's attack (either bullets or contact)
+    public float damageAmount = 10f; // Bullet damage to the player
+    public float damageInterval = 1f; // Time between each bullet attack
     private float nextDamageTime = 0f;
 
-    // reference to the player and player health script
+    // Reference to the player and player health script
     private Transform player;
     private PlayerHealth playerHealth;
 
-    // navmesh obstacle component to stop movement during attack
+    // Navmesh obstacle component
     private NavMeshObstacle navObstacle;
 
-    // flag to check if the drone is attacking
+    // Flag to check if the drone is attacking
     private bool isAttacking = false;
+
+    // Health pack settings
+    public GameObject healthPackPrefab; // Reference to the health pack prefab
+    public float dropChance = 10f; // Percentage chance to drop the health pack
+
+    // Bullet attack settings
+    public GameObject enemyBulletPrefab; // Enemy bullet prefab
+    public float bulletSpeed = 10f; // Bullet speed
+
+    // Explosion settings
+    public GameObject explosionPrefab; // Explosion prefab
+    public float explosionRadius = 5f; // Explosion radius
+    public float explosionDamage = 15f; // Explosion damage to player
 
     private void Start()
     {
-        // find the player in the scene and get their health script
+        // Find the player in the scene and get their health script
         player = GameObject.FindGameObjectWithTag("Player").transform;
         playerHealth = player.GetComponent<PlayerHealth>();
 
-        // get the navmesh obstacle component and make sure carving is enabled
+        // Get the navmesh obstacle component and enable carving
         navObstacle = GetComponent<NavMeshObstacle>();
         if (navObstacle != null)
         {
@@ -44,37 +57,34 @@ public class EnemyAI : MonoBehaviour
 
     private void Update()
     {
-        // calculate distance between the drone and the player
+        // Calculate distance between the drone and the player
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
-        // if the player is within detection range, chase them
+        // If the player is within detection range, chase them
         if (distanceToPlayer < detectionRange)
         {
             ChasePlayer(distanceToPlayer);
 
-            // if the player is within attack range, start attacking
+            // If the player is within attack range, shoot bullets
             if (distanceToPlayer <= attackRange)
             {
-                AttackPlayer();
+                ShootBullet();
             }
         }
         else
         {
-            // if the player is out of range, stop chasing
             StopChasing();
         }
     }
 
-    // start chasing the player
     private void ChasePlayer(float distanceToPlayer)
     {
-        // only move towards the player if not attacking
         if (!isAttacking)
         {
+            // Move towards the player
             Vector3 targetPosition = player.position;
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, chaseSpeed * Time.deltaTime);
 
-            // enable navmesh obstacle for movement
             if (navObstacle != null)
             {
                 navObstacle.enabled = true;
@@ -82,64 +92,105 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    // stop chasing the player and stop movement
     private void StopChasing()
     {
-        // disable navmesh obstacle to stop the drone from moving
         if (navObstacle != null)
         {
             navObstacle.enabled = false;
         }
     }
 
-    // attack the player when within range
-    private void AttackPlayer()
+    private void ShootBullet()
     {
-        // stop moving while attacking by disabling the navmesh obstacle
-        if (navObstacle != null)
+        if (Time.time >= nextDamageTime)
         {
-            navObstacle.enabled = false; // prevent drone from moving while attacking
-        }
+            if (enemyBulletPrefab != null)
+            {
+                // Get a target point on the player (e.g., center of mass or head)
+                Vector3 targetPoint = player.position + Vector3.up * 1.5f; // Adjust height as needed, or use player's head position directly
 
-        // apply damage to the player over time
-        if (Time.time >= nextDamageTime && playerHealth != null)
-        {
-            playerHealth.TakeDamage(damageAmount); // deal damage
-            nextDamageTime = Time.time + damageInterval; // set next damage time
-        }
+                // Use raycasting to check where the bullet should aim
+                RaycastHit hit;
+                if (Physics.Raycast(transform.position, (targetPoint - transform.position).normalized, out hit))
+                {
+                    // Use hit point as the new target
+                    targetPoint = hit.point;
+                }
 
-        // set flag to true to indicate the drone is attacking
-        isAttacking = true;
+                // Instantiate the bullet at the enemy's position
+                GameObject bullet = Instantiate(enemyBulletPrefab, transform.position, Quaternion.identity);
+
+                // Apply velocity to the bullet towards the target point
+                Rigidbody rb = bullet.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    Vector3 directionToTarget = (targetPoint - transform.position).normalized;
+                    rb.velocity = directionToTarget * bulletSpeed;
+                }
+
+                // Pass the damage amount to the enemy bullet behavior
+                EnemyBullet bulletBehavior = bullet.GetComponent<EnemyBullet>();
+                if (bulletBehavior != null)
+                {
+                    bulletBehavior.damageAmount = damageAmount;
+                }
+            }
+
+            // Set cooldown for the next bullet
+            nextDamageTime = Time.time + damageInterval;
+        }
     }
 
-    // function to take damage
     public void TakeDamage(float damageAmount)
     {
         health -= damageAmount;
 
-        // if health is zero or below, destroy the drone
         if (health <= 0)
         {
             Die();
         }
     }
 
-    // function to handle the drone's death
     private void Die()
     {
-        Debug.Log("enemy died!");
-        Destroy(gameObject); // destroy the drone
+        Debug.Log("Enemy died!");
+
+        // Create explosion effect on death
+        if (explosionPrefab != null)
+        {
+            Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+        }
+
+        // Apply damage to the player if they are within the explosion radius
+        Collider[] colliders = Physics.OverlapSphere(transform.position, explosionRadius);
+        foreach (Collider col in colliders)
+        {
+            if (col.CompareTag("Player"))
+            {
+                PlayerHealth playerHealth = col.GetComponent<PlayerHealth>();
+                if (playerHealth != null)
+                {
+                    playerHealth.TakeDamage(explosionDamage);
+                }
+            }
+        }
+
+        // Optionally drop a health pack
+        if (healthPackPrefab != null && Random.value * 100f <= dropChance)
+        {
+            Instantiate(healthPackPrefab, transform.position, Quaternion.identity);
+        }
+
+        Destroy(gameObject); // Destroy the drone object
     }
 
-    // call this function to stop attacking and allow movement again
-    public void StopAttacking()
+    private void OnCollisionEnter(Collision collision)
     {
-        isAttacking = false; // drone is no longer attacking
-
-        // re-enable navmesh obstacle to allow movement
-        if (navObstacle != null)
+        // Check if the drone collides with the player
+        if (collision.gameObject.CompareTag("Player"))
         {
-            navObstacle.enabled = true;
+            // Blow up on contact and deal explosion damage
+            Die();
         }
     }
 }
